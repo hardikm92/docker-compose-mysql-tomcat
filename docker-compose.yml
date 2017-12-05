@@ -11,6 +11,5 @@ dbsetup:
     - db
 db:
   image: mysql
-  environment:
-    MYSQL_ALLOW_EMPTY_PASSWORD:1
+  environment:    
     MYSQL_ROOT_PASSWORD:root
