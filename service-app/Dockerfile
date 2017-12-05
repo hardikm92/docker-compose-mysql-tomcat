@@ -2,7 +2,7 @@
 # app
 #
 
-FROM tomcat:6
+FROM tomcat:7-jre8
 
 ENV DEFAULT_WAR_URL=https://nexus.witr.net/content/groups/public/net/witr/app/1.0.0/
 ENV DEFAULT_WAR_NAME=app-1.0.0.war
