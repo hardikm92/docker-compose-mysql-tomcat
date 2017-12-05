@@ -9,7 +9,7 @@ ENV DEPLOY_WAR_NAME=identityiq.war
 
 COPY ./app*.war /tmp/
 RUN rm -rf /usr/local/tomcat/webapps/*
-mv /tmp/$FAKE_WAR_NAME /usr/local/tomcat/webapps/$DEPLOY_WAR_NAME;
+RUN mv /tmp/$FAKE_WAR_NAME /usr/local/tomcat/webapps/$DEPLOY_WAR_NAME;
 
 COPY ./start-app.sh /root/start-app.sh
 
