@@ -6,8 +6,8 @@ FROM tomcat:7-jre8
 
 ENV DEFAULT_WAR_URL=https://nexus.witr.net/content/groups/public/net/witr/app/1.0.0/
 ENV DEFAULT_WAR_NAME=app-1.0.0.war
-ENV FAKE_WAR_NAME=appFAKE.war
-ENV DEPLOY_WAR_NAME=app.war
+ENV FAKE_WAR_NAME=iiq.war
+ENV DEPLOY_WAR_NAME=identityiq.war
 
 COPY ./app*.war /tmp/
 RUN \
