@@ -13,5 +13,5 @@ COPY ./$FAKE_WAR_NAME /tmp/
 RUN mv /tmp/$FAKE_WAR_NAME /usr/local/tomcat/webapps/$DEPLOY_WAR_NAME
 
 COPY ./start-app.sh /root/start-app.sh
-
+EXPOSE 8080
 CMD ["/root/start-app.sh"]
