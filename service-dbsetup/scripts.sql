@@ -1,4 +1,3 @@
--- put here setup db sql commands
 --
 -- This script is a SAMPLE and can be modified as appropriate by the
 -- customer as long as the equivalent tables and indexes are created.
@@ -408,7 +407,6 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         authentication_resource bit,
         case_insensitive bit,
         authoritative bit,
-        maintenance_expiration bigint,
         logical bit,
         supports_provisioning bit,
         supports_authenticate bit,
@@ -480,11 +478,9 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         perm_remed_mod_type varchar(255),
         config longtext,
         features_string varchar(512),
-        association_schema_name varchar(255),
         creation_rule varchar(32),
         customization_rule varchar(32),
         correlation_rule varchar(32),
-        refresh_rule varchar(32),
         application varchar(32),
         idx integer,
         primary key (id)
@@ -2034,7 +2030,6 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         aggregated bit,
         attribute varchar(322),
         value varchar(450),
-        hash varchar(128) not null unique,
         display_name varchar(450),
         displayable_name varchar(450),
         uuid varchar(128),
@@ -2250,6 +2245,32 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         mitigator varchar(255),
         arguments longtext,
         primary key (id)
+    ) ENGINE=InnoDB;
+
+    create table identityiq.spt_process (
+        id varchar(32) not null,
+        created bigint,
+        modified bigint,
+        owner varchar(32),
+        assigned_scope varchar(32),
+        assigned_scope_path varchar(450),
+        name varchar(128) not null unique,
+        description varchar(1024),
+        primary key (id)
+    ) ENGINE=InnoDB;
+
+    create table identityiq.spt_process_application (
+        process varchar(32) not null,
+        application varchar(32) not null,
+        idx integer not null,
+        primary key (process, idx)
+    ) ENGINE=InnoDB;
+
+    create table identityiq.spt_process_bundles (
+        process varchar(32) not null,
+        elt varchar(32) not null,
+        idx integer not null,
+        primary key (process, idx)
     ) ENGINE=InnoDB;
 
     create table identityiq.spt_process_log (
@@ -2705,7 +2726,6 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         default_value varchar(255),
         remed_mod_type varchar(255),
         schema_object_type varchar(255),
-        object_mapping varchar(255),
         idx integer not null,
         primary key (applicationschema, idx)
     ) ENGINE=InnoDB;
@@ -2921,11 +2941,10 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         name varchar(512),
         native_owner_id varchar(128),
         target_source varchar(32),
-        application varchar(32),
         target_host varchar(1024),
         display_name varchar(400),
         full_path longtext,
-        unique_name_hash varchar(128),
+        full_path_hash varchar(128),
         attributes longtext,
         native_object_id varchar(322),
         parent varchar(32),
@@ -2954,7 +2973,6 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         effective integer,
         deny_permission bit,
         last_aggregation bigint,
-        attributes longtext,
         primary key (id)
     ) ENGINE=InnoDB;
 
@@ -3066,9 +3084,6 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         task_terminated bit,
         partitioned bit,
         completion_status varchar(255),
-        run_length integer,
-        run_length_average integer,
-        run_length_deviation integer,
         primary key (id)
     ) ENGINE=InnoDB;
 
@@ -3660,12 +3675,6 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         add constraint FK62F93AF839D71460 
         foreign key (application) 
         references identityiq.spt_application (id);
-
-    alter table identityiq.spt_application_schema 
-        add index FK62F93AF8D9F8531C (refresh_rule), 
-        add constraint FK62F93AF8D9F8531C 
-        foreign key (refresh_rule) 
-        references identityiq.spt_rule (id);
 
     alter table identityiq.spt_application_schema 
         add index FK62F93AF84FE65998 (creation_rule), 
@@ -4318,8 +4327,6 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
     create index spt_cert_item_perm_right on identityiq.spt_certification_item (exception_permission_right);
 
     create index spt_cert_item_att_name on identityiq.spt_certification_item (exception_attribute_name);
-
-    create index spt_cert_item_wk_up on identityiq.spt_certification_item (wake_up_date);
 
     create index spt_needs_refresh on identityiq.spt_certification_item (needs_refresh);
 
@@ -5081,15 +5088,11 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
 
     create index spt_idrequest_ext_ticket_ci on identityiq.spt_identity_request (external_ticket_id);
 
-    create index spt_idrequest_target_ci on identityiq.spt_identity_request (target_display_name);
-
     create index spt_idrequest_name on identityiq.spt_identity_request (name);
 
     create index spt_idrequest_exec_status on identityiq.spt_identity_request (execution_status);
 
     create index spt_idrequest_compl_status on identityiq.spt_identity_request (completion_status);
-
-    create index spt_idrequest_requestor_ci on identityiq.spt_identity_request (requester_display_name);
 
     create index spt_idrequest_priority on identityiq.spt_identity_request (priority);
 
@@ -5097,9 +5100,13 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
 
     create index spt_idrequest_has_messages on identityiq.spt_identity_request (has_messages);
 
+    create index spt_idrequest_target on identityiq.spt_identity_request (target_display_name);
+
     create index spt_idrequest_state on identityiq.spt_identity_request (state);
 
     create index spt_idrequest_type on identityiq.spt_identity_request (type);
+
+    create index spt_idrequest_requestor on identityiq.spt_identity_request (requester_display_name);
 
     create index spt_idrequest_verified on identityiq.spt_identity_request (verified);
 
@@ -5369,6 +5376,8 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
 
     create index spt_managed_attr_aggregated on identityiq.spt_managed_attribute (aggregated);
 
+    create index spt_managed_attr_purview on identityiq.spt_managed_attribute (purview);
+
     create index spt_managed_attr_type on identityiq.spt_managed_attribute (type);
 
     create index spt_managed_attr_requestable on identityiq.spt_managed_attribute (requestable);
@@ -5606,6 +5615,42 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
         add constraint FK6E4413E0A5FB1B1 
         foreign key (owner) 
         references identityiq.spt_identity (id);
+
+    alter table identityiq.spt_process 
+        add index FK6BFCDBE7486634B7 (assigned_scope), 
+        add constraint FK6BFCDBE7486634B7 
+        foreign key (assigned_scope) 
+        references identityiq.spt_scope (id);
+
+    alter table identityiq.spt_process 
+        add index FK6BFCDBE7A5FB1B1 (owner), 
+        add constraint FK6BFCDBE7A5FB1B1 
+        foreign key (owner) 
+        references identityiq.spt_identity (id);
+
+    alter table identityiq.spt_process_application 
+        add index FKD8579CF839D71460 (application), 
+        add constraint FKD8579CF839D71460 
+        foreign key (application) 
+        references identityiq.spt_application (id);
+
+    alter table identityiq.spt_process_application 
+        add index FKD8579CF8B234269E (process), 
+        add constraint FKD8579CF8B234269E 
+        foreign key (process) 
+        references identityiq.spt_process (id);
+
+    alter table identityiq.spt_process_bundles 
+        add index FK9F488BD97B02976F (elt), 
+        add constraint FK9F488BD97B02976F 
+        foreign key (elt) 
+        references identityiq.spt_bundle (id);
+
+    alter table identityiq.spt_process_bundles 
+        add index FK9F488BD9B234269E (process), 
+        add constraint FK9F488BD9B234269E 
+        foreign key (process) 
+        references identityiq.spt_process (id);
 
     create index spt_process_log_approval_name on identityiq.spt_process_log (approval_name);
 
@@ -6219,15 +6264,7 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
 
     create index spt_target_last_agg on identityiq.spt_target (last_aggregation);
 
-    create index spt_target_unique_name_hash on identityiq.spt_target (unique_name_hash);
-
     create index spt_target_extended1_ci on identityiq.spt_target (extended1);
-
-    alter table identityiq.spt_target 
-        add index FK19E5251939D71460 (application), 
-        add constraint FK19E5251939D71460 
-        foreign key (application) 
-        references identityiq.spt_application (id);
 
     alter table identityiq.spt_target 
         add index FK19E525192F001D5 (target_source), 
@@ -6709,9 +6746,7 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
 
     create index spt_request_completed on identityiq.spt_request (completed);
 
-    create index spt_request_id_composite on identityiq.spt_request (completed, next_launch, launched);
-
-    create index spt_request_host on identityiq.spt_request (host);
+    create index spt_request_id_composite on identityiq.spt_request (id, completed, next_launch, launched);
 
     create index spt_request_launched on identityiq.spt_request (launched);
 
@@ -6728,8 +6763,6 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
     create index spt_bundle_modified on identityiq.spt_bundle (modified);
 
     create index spt_bundle_created on identityiq.spt_bundle (created);
-
-    create index spt_task_result_host on identityiq.spt_task_result (host);
 
     create index spt_task_result_created on identityiq.spt_task_result (created);
 
@@ -6754,8 +6787,6 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
     create index spt_integration_conf_modified on identityiq.spt_integration_config (modified);
 
     create index spt_audit_event_created on identityiq.spt_audit_event (created);
-
-    create index spt_audit_event_targ_act_comp on identityiq.spt_audit_event (target, action);
 
     create index spt_identity_snapshot_created on identityiq.spt_identity_snapshot (created);
 
@@ -6854,6 +6885,8 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
     create index SPT_IDX54AF7352EE4EEBE on identityiq.spt_workflow_target (assigned_scope_path(255));
 
     create index SPT_IDX608761A1BFB4BC8 on identityiq.spt_audit_config (assigned_scope_path(255));
+
+    create index spt_process_assignedscopepath on identityiq.spt_process (assigned_scope_path(255));
 
     create index SPT_IDXA6919D21F9F21D96 on identityiq.spt_remediation_item (assigned_scope_path(255));
 
@@ -6981,21 +7014,21 @@ create index idx_qrtz_ft_tg on QRTZ221_FIRED_TRIGGERS(SCHED_NAME,TRIGGER_GROUP);
 
     create index SPT_IDXC1811197B7DE5802 on identityiq.spt_role_mining_result (assigned_scope_path(255));
 
-    create table identityiq.spt_syslog_event_sequence ( next_val bigint );
-
-    insert into identityiq.spt_syslog_event_sequence values ( 1 );
-
     create table identityiq.spt_alert_sequence ( next_val bigint );
 
     insert into identityiq.spt_alert_sequence values ( 1 );
+
+    create table identityiq.spt_work_item_sequence ( next_val bigint );
+
+    insert into identityiq.spt_work_item_sequence values ( 1 );
 
     create table identityiq.spt_identity_request_sequence ( next_val bigint );
 
     insert into identityiq.spt_identity_request_sequence values ( 1 );
 
-    create table identityiq.spt_work_item_sequence ( next_val bigint );
+    create table identityiq.spt_syslog_event_sequence ( next_val bigint );
 
-    insert into identityiq.spt_work_item_sequence values ( 1 );
+    insert into identityiq.spt_syslog_event_sequence values ( 1 );
 
     create table identityiq.spt_prv_trans_sequence ( next_val bigint );
 
