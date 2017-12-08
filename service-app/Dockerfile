@@ -2,7 +2,7 @@
 # app
 #
 
-FROM tomcat:7-jre8
+FROM tomcat:7-jre8-alpine
 
 ENV FAKE_WAR_NAME=iiq.war
 ENV DEPLOY_WAR_NAME=identityiq.war
