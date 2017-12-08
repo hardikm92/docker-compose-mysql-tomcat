@@ -4,6 +4,8 @@ app:
   links:
     - dbsetup
     - db
+  ports:
+    - "8080:8080"
   volumes:
     - /tmp/war/:/usr/local/tomcat/webapps/
 dbsetup:
