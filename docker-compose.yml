@@ -1,5 +1,6 @@
 app:
   build: ./service-app/
+  container_name: tomcat_server
   links:
     - dbsetup
     - db
