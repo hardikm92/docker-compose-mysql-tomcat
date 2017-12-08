@@ -4,6 +4,8 @@ app:
   links:
     - dbsetup
     - db
+  volumes:
+    - /tmp/war/:/usr/local/tomcat/webapps/
 dbsetup:
   build: ./service-dbsetup/
   environment:
